@@ -8,8 +8,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.deplugin.hookHelper.AMSHookHelper;
 import com.example.deplugin.puppet.activity.StandardStubActivity;
 import com.example.deplugin.utils.DePluginSP;
@@ -18,13 +16,14 @@ import com.example.deplugin.utils.Utils;
 
 import java.io.File;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
     private static final String TAG = Constants.TAG + "MainActivity";
     private static String fileName = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        loadResource(DePluginSP.getInstance(DePluginApplication.getContext()).getString(Constants.COPY_FILE_PATH, ""));
         setContentView(R.layout.activity_main);
         Utils.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE});
         init();

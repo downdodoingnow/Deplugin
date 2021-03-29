@@ -1,13 +1,10 @@
 package com.example.deplugin.hookHelper.hookInvocationHandler;
 
-import android.content.ComponentName;
 import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.example.deplugin.Constants;
-import com.example.deplugin.DePluginApplication;
-import com.example.deplugin.puppet.activity.StandardStubActivity;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

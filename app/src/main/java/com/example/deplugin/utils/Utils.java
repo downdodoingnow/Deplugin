@@ -37,10 +37,12 @@ public class Utils {
             Log.i(TAG, "save apk file path is " + filePath);
 
             fileOutputStream = new FileOutputStream(filePath);
+            //获取assets目录下的插件apk输入流
             inputStream = assetManager.open(pluginName);
 
             byte[] bytes = new byte[1024];
             int length = -1;
+            //将apk文件复制到对应到文件目录下
             while ((length = inputStream.read(bytes)) != -1) {
                 fileOutputStream.write(bytes, 0, length);
             }
@@ -82,10 +84,17 @@ public class Utils {
         }
     }
 
+    /**
+     *
+     * @param context
+     * @param pluginName 插件名
+     */
     public static void copyApk(Context context, String pluginName) {
         DePluginSP sp = DePluginSP.getInstance(context);
+        //获取插件apk保存路径
         String filePath = sp.getString(Constants.COPY_FILE_PATH, "");
         if (TextUtils.isEmpty(filePath)) {
+            //如果插件apk保存路径为空，说明没有copy插件apk到对应目录成功
             File saveApkFile = context.getFileStreamPath(pluginName);
             if (null == saveApkFile) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -103,6 +112,8 @@ public class Utils {
             }
             Log.i(TAG, "copy " + result);
         } else {
+            //如果插件apk保存路径不为空，并且本地存在了apk则不在进行二次copy，否则可能已经被删除则重新复制一份到对应到目录下
+            //当然在实际到开发中这里到情况会复杂的多，比如与服务器插件版本进行对比判断是否需要重新下载等
             File file = new File(filePath);
             if (file.exists()) {
                 Log.i(TAG, "had copy apk before,so no need copy again");

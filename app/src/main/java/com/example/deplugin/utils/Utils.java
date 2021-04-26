@@ -1,8 +1,10 @@
 package com.example.deplugin.utils;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.os.Build;
@@ -85,7 +87,6 @@ public class Utils {
     }
 
     /**
-     *
      * @param context
      * @param pluginName 插件名
      */
@@ -126,34 +127,14 @@ public class Utils {
 
     public static ApplicationInfo generateApplicationInfo(String pluginPath) {
         try {
-            Class<?> packageParserCls = RefInvoke.getClass("android.content.pm.PackageParser");
-            Object packageParserObj = RefInvoke.createObject(packageParserCls, new Class[]{}, new Class[]{});
-
-            File file = new File(pluginPath);
-            Log.i(TAG, "plugin path is " + pluginPath);
-            if (!file.exists()) {
-                Log.i(TAG, "file non-exist");
-                return null;
-            }
-            Object packageObj = RefInvoke.on(packageParserObj, "parseMonolithicPackage", File.class, int.class).invoke(file, 0);
-            if (null == packageObj) {
-                Log.i(TAG, "get PackageParse$Package obj failed");
-                return null;
-            }
-
-            Class<?> packageUserStateCls = RefInvoke.getClass("android.content.pm.PackageUserState");
-            ApplicationInfo applicationInfo = RefInvoke.on(packageParserObj, "generateApplicationInfo", packageObj.getClass(), int
-                    .class, packageUserStateCls).invoke(packageObj, 0, RefInvoke.createObject(packageUserStateCls, new Class[]{}, new Class[]{}));
-            Log.i(TAG, pluginPath + " package name is " + applicationInfo.packageName);
-
-            int uid = getUid();
-            if (-1 == uid) {
-                Log.i(TAG, "get uid failed");
+            ApplicationInfo applicationInfo = getApplicationInfoByPackageArchiveInfo(pluginPath);
+            if (null == applicationInfo) {
+                Log.i(TAG, "get applicationInfo failed");
                 return null;
             }
             applicationInfo.sourceDir = pluginPath;
             applicationInfo.publicSourceDir = pluginPath;
-            applicationInfo.uid = uid;
+            applicationInfo.uid = Process.myUid();
             return applicationInfo;
         } catch (Exception e) {
             Log.i(TAG, "generateApplicationzInfo failed " + e.getMessage());
@@ -161,16 +142,41 @@ public class Utils {
         return null;
     }
 
-    public static int getUid() {
-        try {
-            Context context = DePluginApplication.getContext();
-            PackageManager packageManager = context.getPackageManager();
-            ApplicationInfo applicationInfo = packageManager.getApplicationInfo(context.getPackageName(), PackageManager.GET_ACTIVITIES);
-            return applicationInfo.uid;
-        } catch (Exception e) {
-            Log.e(TAG, "getUid failed " + e);
+    private static ApplicationInfo getApplicationInfoByReflect(String pluginPath) throws Exception {
+        Class<?> packageParserCls = RefInvoke.getClass("android.content.pm.PackageParser");
+        Object packageParserObj = RefInvoke.createObject(packageParserCls, new Class[]{}, new Class[]{});
+
+        File file = new File(pluginPath);
+        Log.i(TAG, "plugin path is " + pluginPath);
+        if (!file.exists()) {
+            Log.i(TAG, "file non-exist");
+            return null;
         }
-        return -1;
+        Object packageObj = RefInvoke.on(packageParserObj, "parseMonolithicPackage", File.class, int.class).invoke(file, 0);
+        if (null == packageObj) {
+            Log.i(TAG, "get PackageParse$Package obj failed");
+            return null;
+        }
+
+        Class<?> packageUserStateCls = RefInvoke.getClass("android.content.pm.PackageUserState");
+        ApplicationInfo applicationInfo = RefInvoke.on(packageParserObj, "generateApplicationInfo", packageObj.getClass(), int
+                .class, packageUserStateCls).invoke(packageObj, 0, RefInvoke.createObject(packageUserStateCls, new Class[]{}, new Class[]{}));
+        Log.i(TAG, pluginPath + " package name is " + applicationInfo.packageName);
+        return applicationInfo;
+    }
+
+    private static ApplicationInfo getApplicationInfoByPackageArchiveInfo(String pluginPath) {
+        PackageManager packageManager = DePluginApplication.getContext().getPackageManager();
+        if (null == packageManager) {
+            Log.i(TAG, "get PackageManager failed");
+            return null;
+        }
+        PackageInfo packageInfo = packageManager.getPackageArchiveInfo(pluginPath, 0);
+        if (null == packageInfo) {
+            Log.i(TAG, "get packageInfo failed");
+            return null;
+        }
+        return packageInfo.applicationInfo;
     }
 
     public static void mergeDex(ClassLoader classLoader, File apkFile, File optDexfile) {

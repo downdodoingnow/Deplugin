@@ -1,12 +1,15 @@
 package com.example.deplugin.hookHelper.hookInvocationHandler;
 
+import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Process;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.Log;
@@ -55,7 +58,7 @@ public class ActivityThreadHandler implements Handler.Callback {
                                 Log.i(TAG, "dex path is empty,so do need replace class loader");
                                 break;
                             }
-                            //replaceClassloader(mLaunchActivityItemCls, obj, path);
+                            replaceClassloader(mLaunchActivityItemCls, obj, path);
                             replace(intent);
                             break;
                         }
@@ -100,6 +103,7 @@ public class ActivityThreadHandler implements Handler.Callback {
             return;
         }
         ApplicationInfo applicationInfo = Utils.generateApplicationInfo(DePluginSP.getInstance(DePluginApplication.getContext()).getString(Constants.COPY_FILE_PATH, ""));
+
         if (null != applicationInfo) {
             Object defaultCompatibilityInfo = RefInvoke.getStaticFieldValue(RefInvoke.getField("android.content.res.CompatibilityInfo", "DEFAULT_COMPATIBILITY_INFO"), RefInvoke.getClass("android.content.res.CompatibilityInfo"));
             Object loadedApk = RefInvoke.on(sCurrentActivityThread, "getPackageInfo", ApplicationInfo.class, RefInvoke.getClass("android.content.res.CompatibilityInfo"), int.class).invoke(applicationInfo, defaultCompatibilityInfo, Context.CONTEXT_INCLUDE_CODE);
@@ -110,7 +114,7 @@ public class ActivityThreadHandler implements Handler.Callback {
                 Log.i(TAG, "plugin pkg name is " + pluginPkgName);
                 replacePkgName(mLaunchActivityItemCls, obj, pluginPkgName);
                 setClassloader(loadedApk, path);
-                mPackages.put(pluginPkgName, new WeakReference<>(loadedApk));
+                //mPackages.put(pluginPkgName, new WeakReference<>(loadedApk));
             } else {
                 Log.i(TAG, "get plugin pkg name failed");
             }

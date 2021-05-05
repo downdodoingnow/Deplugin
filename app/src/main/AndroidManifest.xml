@@ -13,15 +13,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <service
+            android:name=".puppet.service.StubService"
+            android:enabled="true"
+            android:exported="true"/>
 
         <activity
             android:name=".puppet.activity.StandardStubActivity"
             android:launchMode="standard" />
-
         <activity
             android:name=".puppet.activity.SingleTopStubActivity"
             android:launchMode="singleTop" />
-
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

@@ -2,14 +2,16 @@ package com.example.deplugin;
 
 import android.Manifest;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
 import com.example.deplugin.hookHelper.AMSHookHelper;
-import com.example.deplugin.puppet.activity.StandardStubActivity;
 import com.example.deplugin.utils.DePluginSP;
 import com.example.deplugin.utils.RefInvoke;
 import com.example.deplugin.utils.Utils;
@@ -20,6 +22,18 @@ public class MainActivity extends BaseActivity {
     private static final String TAG = Constants.TAG + "MainActivity";
     private static String fileName = "";
 
+    private ServiceConnection cnn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            Log.i(TAG, "onServiceConnected");
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            Log.i(TAG, "onServiceDisconnected");
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,7 +43,7 @@ public class MainActivity extends BaseActivity {
         init();
         Log.i(TAG, "onCreate deplugin MainActivity");
 
-        mergeDex();
+        //mergeDex();
     }
 
     private void mergeDex() {
@@ -96,12 +110,7 @@ public class MainActivity extends BaseActivity {
         int id = view.getId();
         switch (id) {
             case R.id.plugin:
-                Intent intent = new Intent();
-                ComponentName componentName = new ComponentName(getPackageName(), "com.example.mydemo.Main2Activity");
-                intent.setComponent(componentName);
-                intent.putExtra(Constants.REPLACED_START_UP_INTENT, createStartUpIntent());
-
-                startActivity(intent);
+                startActivity();
                 break;
             case R.id.hook:
                 AMSHookHelper.hookAMN();
@@ -116,15 +125,41 @@ public class MainActivity extends BaseActivity {
                 } catch (Exception e) {
                     Log.e(TAG, "click: " + e);
                 }
+                break;
+            case R.id.service:
+                serviceOperate("startService");
+                break;
+            case R.id.stop_service:
+                serviceOperate("stopService");
+                break;
+            case R.id.bind_service:
+                serviceOperate("bindService");
+                break;
+            case R.id.unbind_service:
+                unbindService(cnn);
+                break;
         }
 
     }
 
-    private Intent createStartUpIntent() {
-        Intent startUpIntent = new Intent();
-        ComponentName componentName = new ComponentName(DePluginApplication.getContext(), StandardStubActivity.class.getName());
-        startUpIntent.setComponent(componentName);
-        startUpIntent.putExtra(Constants.DEX_PATH, DePluginSP.getInstance(DePluginApplication.getContext()).getString(Constants.COPY_FILE_PATH, ""));
-        return startUpIntent;
+    private void serviceOperate(String name) {
+        Intent intent = new Intent();
+        ComponentName componentName = new ComponentName(getPackageName(), "com.example.mydemo.MyService");
+        intent.setComponent(componentName);
+        if (TextUtils.equals(name, "startService")) {
+            startService(intent);
+        } else if (TextUtils.equals(name, "stopService")) {
+            stopService(intent);
+        } else if (TextUtils.equals(name, "bindService")) {
+            bindService(intent, cnn, Context.BIND_AUTO_CREATE);
+        }
+    }
+
+    private void startActivity() {
+        Intent intent = new Intent();
+        ComponentName componentName = new ComponentName(getPackageName(), "com.example.mydemo.Main2Activity");
+        intent.setComponent(componentName);
+
+        startActivity(intent);
     }
 }

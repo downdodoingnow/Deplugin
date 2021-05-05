@@ -16,6 +16,8 @@ import androidx.core.app.ActivityCompat;
 
 import com.example.deplugin.Constants;
 import com.example.deplugin.DePluginApplication;
+import com.example.deplugin.puppet.activity.StandardStubActivity;
+import com.example.deplugin.puppet.service.StubService;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -204,5 +206,10 @@ public class Utils {
         } catch (Exception e) {
             Log.e(TAG, "mergeDex failed " + e);
         }
+    }
+
+    public static void mapping(){
+        HostToPluginMapping.putServiceMapping(StubService.class.getName(),"com.example.mydemo.MyService");
+        HostToPluginMapping.putActivityMapping(StandardStubActivity.class.getName(),"com.example.mydemo.Main2Activity");
     }
 }

@@ -20,6 +20,7 @@ public class DePluginApplication extends Application {
         mContext = this;
         Log.i(Constants.TAG, "onCreate application");
         Utils.copyApk(this, Constants.PLUGIN_NAME_ONE);
+        Utils.mapping();
     }
 
     public static Context getContext() {

@@ -171,7 +171,6 @@ public class RefInvoke {
             } else {
                 return (T) mMethod.invoke(mObject, args);
             }
-
         }
     }
 }

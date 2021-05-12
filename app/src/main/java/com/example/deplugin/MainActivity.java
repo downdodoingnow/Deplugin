@@ -12,15 +12,17 @@ import android.util.Log;
 import android.view.View;
 
 import com.example.deplugin.hookHelper.AMSHookHelper;
+import com.example.deplugin.puppet.receiver.StubReceiver;
 import com.example.deplugin.utils.DePluginSP;
-import com.example.deplugin.utils.RefInvoke;
+import com.example.deplugin.utils.PluginReceiverParseUtils;
 import com.example.deplugin.utils.Utils;
 
 import java.io.File;
+import java.lang.reflect.Method;
 
 public class MainActivity extends BaseActivity {
     private static final String TAG = Constants.TAG + "MainActivity";
-    private static String fileName = "";
+    private static String path = "";
 
     private ServiceConnection cnn = new ServiceConnection() {
         @Override
@@ -43,12 +45,11 @@ public class MainActivity extends BaseActivity {
         init();
         Log.i(TAG, "onCreate deplugin MainActivity");
 
-        //mergeDex();
+        mergeDex();
     }
 
     private void mergeDex() {
         try {
-            String path = DePluginSP.getInstance(DePluginApplication.getContext()).getString(Constants.COPY_FILE_PATH, "");
             if (TextUtils.isEmpty(path)) {
                 Log.i(TAG, "path is empty");
                 return;
@@ -99,8 +100,7 @@ public class MainActivity extends BaseActivity {
 
     private void init() {
         try {
-            File file = getFileStreamPath(Constants.PLUGIN_NAME_ONE);
-            fileName = file.getAbsolutePath();
+            path = DePluginSP.getInstance(DePluginApplication.getContext()).getString(Constants.COPY_FILE_PATH, "");
         } catch (Exception e) {
             Log.e(TAG, "init: " + e.getMessage());
         }
@@ -119,9 +119,19 @@ public class MainActivity extends BaseActivity {
                 break;
             case R.id.test:
                 try {
-                    Class<?> cls = getClassLoader().loadClass("com.example.deplugin.Test");
-                    Log.i(TAG, "click: " + cls);
-                    RefInvoke.on(RefInvoke.createObject(cls, new Class[]{}, new Object[]{}), "print").invoke();
+//                    Intent intent = new Intent();
+//                    ComponentName componentName = new ComponentName(this, StubReceiver.class.getName());
+//                    intent.setComponent(componentName);
+//                    intent.setAction("android.intent.action.MyReceiver");
+//                    sendBroadcast(intent);
+                    Class<?> cls = Class.forName("com.example.mydemo.Utils");
+                    Method method = cls.getDeclaredMethod("registerReceiver", Context.class);
+                    method.setAccessible(true);
+                    method.invoke(cls, this);
+
+                    Intent intent = new Intent();
+                    intent.setAction("com.andorid.test.ACTION");
+                    sendBroadcast(intent);
                 } catch (Exception e) {
                     Log.e(TAG, "click: " + e);
                 }
@@ -137,6 +147,9 @@ public class MainActivity extends BaseActivity {
                 break;
             case R.id.unbind_service:
                 unbindService(cnn);
+                break;
+            case R.id.receiver:
+                PluginReceiverParseUtils.parsePackage(path);
                 break;
         }
 

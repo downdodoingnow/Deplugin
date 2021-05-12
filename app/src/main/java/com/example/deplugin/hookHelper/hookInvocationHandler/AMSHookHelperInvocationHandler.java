@@ -48,14 +48,21 @@ public class AMSHookHelperInvocationHandler implements InvocationHandler {
         return method.invoke(mBase, objects);
     }
 
+    /**
+     *
+     * @param realIntent 上层应用所构造Intent对象
+     * @param name 上层应用所调用的方法，没啥实际用处，只是为了打印
+     */
     private void hookServiceOperate(Intent realIntent, String name) {
         if (null != realIntent) {
             ComponentName pluginComponentName = realIntent.getComponent();
             if (null != pluginComponentName) {
                 String pluginServiceName = pluginComponentName.getClassName();
+                //获取要启动的插件Service所对应的宿主Service名字哦
                 String hostServiceName = HostToPluginMapping.getHostService(pluginServiceName);
                 if (!TextUtils.isEmpty(hostServiceName)) {
                     Log.i(TAG, "current is hooking " + name);
+                    //将实际要启动的Service替换成宿主中Service以欺骗AMS
                     ComponentName componentName = new ComponentName(pluginComponentName.getPackageName(), hostServiceName);
                     realIntent.setComponent(componentName);
                 }

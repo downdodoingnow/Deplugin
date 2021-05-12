@@ -79,4 +79,17 @@
             android:text="unBindService" />
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/receiver"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:onClick="click"
+            android:text="Receiver" />
+    </LinearLayout>
+
 </LinearLayout>

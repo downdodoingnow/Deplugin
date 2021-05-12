@@ -13,10 +13,16 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <receiver
+            android:name=".puppet.receiver.StubReceiver"
+            android:enabled="true"
+            android:exported="true" />
+
         <service
             android:name=".puppet.service.StubService"
             android:enabled="true"
-            android:exported="true"/>
+            android:exported="true" />
 
         <activity
             android:name=".puppet.activity.StandardStubActivity"
